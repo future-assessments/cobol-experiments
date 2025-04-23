@@ -39,7 +39,11 @@
        01 LOAN-VALUES.
            05 AMOUNT                 PIC 9(6).
            05 RATE                   COMP-2 VALUE 0.
-           05 YEARS                   PIC 9(2).
+           05 YEARS                  PIC 9(2).
+           05 BALANCE                PIC 9(6)V99.
+
+       01 PAYMENT-VALUES.
+           05 PAYMENT-AMOUNT         PIC 9(5)V99.
 
        01  WS-FILE-STATUS            PIC XX.
        01 WS-SWITCHES.
@@ -98,6 +102,12 @@
 
 
            DISPLAY MORTGAGEE-RECORD.
+
+       2200-CALCULATE-MONTHLY-PAYMENT.
+           COMPUTE PAYMENT-AMOUNT ROUNDED = (AMOUNT / (YEARS * 12) ) 
+           COMPUTE BALANCE = AMOUNT - PAYMENT-AMOUNT
+
+           DISPLAY 'NOT YET IMPLEMENTED'
 
        3000-TERMINATE.
            CLOSE MORTGAGE-FILE.
