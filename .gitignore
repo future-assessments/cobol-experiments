@@ -1,4 +1,15 @@
 mortgage-src/mortgages
 compute-src/compute
-**/*.class
+
+# macos
 **/.DS_Store
+
+#java
+**/*.class
+
+# rust
+**/target
+
+# ides
+.idea
+.vscode
