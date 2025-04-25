@@ -2,6 +2,23 @@
 
 Code bases to test out different COBOL Constructs in different languages
 
+## Overall Goal
+Test out modern programming languages for floating point calculations and identify when rounding errors may cause issues when migrating away from COBOL
+
+## Current Goal
+1. Read an input file containing customer name, their loan amount, interest rate and loan term
+2. Calculate the monthly payments and update the balance as the payment amount is identified
+3. Print out each monthly payment until the Loan balance reaches $0
+
+The file uses a column based format with each field starting at different columns in the file (see readme for the layout)
+
+The file will be read as ASCII (not EBCDIC) and each row processed one by one printing out all months for each record.
+
+Assumptions:
+There is no need for a backend storage (file or database) to store progressive results, in-memory is fine.
+Speed is not a factor here, just accuracy
+The algorithm used to calculate payments will be the same across all languages
+
 ## Compute
 
 Basic floating point calculations in:
