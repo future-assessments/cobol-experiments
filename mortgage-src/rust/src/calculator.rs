@@ -35,7 +35,7 @@ impl MortgageCalculator {
     }
 
     /// Process the input string buffer and return a formatted output string buffer
-    pub fn process(&self, input_buffer: &str) -> String {
+    pub fn process(&self, input_buffer: &str, start_year: u16) -> String {
         // Parse mortgage records from input string
         let records = self.parse_mortgage_records(input_buffer);
 
@@ -43,7 +43,7 @@ impl MortgageCalculator {
         let mut output = String::new();
 
         for record in records {
-            let payments = self.calculate_payment_schedule(&record);
+            let payments = self.calculate_payment_schedule(&record, start_year);
             self.format_record_output(&record, &payments, &mut output);
         }
 
@@ -110,15 +110,15 @@ impl MortgageCalculator {
     }
 
     /// Calculate monthly payment schedule for a mortgage
-    fn calculate_payment_schedule(&self, record: &MortgageRecord) -> Vec<PaymentRecord> {
+    fn calculate_payment_schedule(&self, record: &MortgageRecord, start_year: u16) -> Vec<PaymentRecord> {
         // Early return if loan amount is zero
         if record.loan_amount.is_zero() {
-            return Vec::new(); // Return empty vector
+            return Vec::new();
         }
         
         let mut payments = Vec::new();
 
-        // Convert annual interest rate to monthly rate (as a decimal)
+        // Convert annual interest rate to monthly rate
         let monthly_rate = record.interest_rate / dec!(100) / dec!(12);
 
         // Number of payments
@@ -141,7 +141,7 @@ impl MortgageCalculator {
                 record.loan_amount / Decimal::from(num_payments)
             } else {
                 eprintln!("Warning: Cannot calculate payment for 0% interest and 0 term, or potential division by zero. Record ID: {}", record.id);
-                dec!(0) // Placeholder
+                dec!(0) 
             }
         } else {
             record.loan_amount * numerator / denominator
@@ -149,7 +149,6 @@ impl MortgageCalculator {
 
         // Calculate payment schedule
         let mut remaining_balance = record.loan_amount;
-        let start_year = 2024; // Assuming current year as start
 
         for payment_num in 1..=num_payments {
             let year = start_year + ((payment_num - 1) / 12) as u16;
@@ -165,16 +164,11 @@ impl MortgageCalculator {
                 remaining_balance
             };
 
-            // Calculate actual payment (may be less for the final payment)
+            // Calculate actual payment
             let actual_payment = interest + principal_payment;
 
             // Update remaining balance
             remaining_balance -= principal_payment;
-
-            // Ensure we don't have a tiny negative balance due to rounding
-            // if remaining_balance < dec!(0.01) {
-            //remaining_balance = dec!(0);
-            //}
 
             payments.push(PaymentRecord {
                 year,
@@ -183,7 +177,7 @@ impl MortgageCalculator {
                 remaining_balance,
             });
 
-            // If balance is zero, we're done
+            // If balance is near zero, we're done
             if remaining_balance < dec!(0.01) {
                 break;
             }
@@ -320,15 +314,17 @@ mod tests {
             term_years: 30,
             loan_type: 'F',
         };
+        
+        let start_year = 2025;
 
-        let payments = calculator.calculate_payment_schedule(&record);
+        let payments = calculator.calculate_payment_schedule(&record, start_year);
 
         // There should be 30 years * 12 months = 360 payments
         assert_eq!(payments.len(), 360);
 
         // Check first payment
         let first = &payments[0];
-        assert_eq!(first.year, 2024);
+        assert_eq!(first.year, start_year);
         assert_eq!(first.month, 1);
 
         // For a $100,000 loan at 6% over 30 years, the payment should be around $599.55
@@ -338,7 +334,7 @@ mod tests {
 
         // Verify last payment
         let last = &payments[payments.len() - 1];
-        assert_eq!(last.year, 2053);
+        assert_eq!(last.year, start_year + 29);
         assert_eq!(last.month, 12);
 
         // Remaining balance should be very close to zero at the end
@@ -360,7 +356,9 @@ mod tests {
             loan_type: 'F',
         };
 
-        let payments = calculator.calculate_payment_schedule(&record);
+        let start_year = 2025;
+
+        let payments = calculator.calculate_payment_schedule(&record, start_year);
 
         // There should be 10 years * 12 months = 120 payments
         assert_eq!(payments.len(), 120);
@@ -391,7 +389,9 @@ mod tests {
             loan_type: 'F',
         };
 
-        let payments = calculator.calculate_payment_schedule(&record);
+        let start_year = 2025;
+
+        let payments = calculator.calculate_payment_schedule(&record, start_year);
 
         // For a $0 loan, we should have no payments
         assert_eq!(payments.len(), 0);
@@ -447,17 +447,19 @@ mod tests {
 
         // Test with one valid record
         let input = "000001Smith         JMichael       300000062515F";
-        let output = calculator.process(input);
+        let start_year = 2025;
+        
+        let output = calculator.process(input, start_year);
 
         // Check for expected output elements
         assert!(output.contains("Mortgage ID: 000001"));
         assert!(output.contains("Customer: Michael J Smith"));
         assert!(output.contains("Loan Amount: $300000"));
-        assert!(output.contains("Year: 2024, Month: 1"));
+        assert!(output.contains("Year: 2025, Month: 1"));
 
         // There should be payment records for each month
-        assert!(output.contains("Year: 2024, Month: 12"));
-        assert!(output.contains("Year: 2025, Month: 1"));
+        assert!(output.contains("Year: 2026, Month: 12"));
+        assert!(output.contains("Year: 2027, Month: 1"));
 
         // The last payment should be near the end of the term
         assert!(output.contains("Year: 2033, Month: 12"));
@@ -470,7 +472,9 @@ mod tests {
         // Test with one valid and one invalid record
         let input = "000123SMITH         JJOHN           100000050010F\n\
                      INVALIDThis is not a valid record at all.";
-        let output = calculator.process(input);
+        let start_year = 2025;
+        
+        let output = calculator.process(input, start_year);
 
         // Should only process the valid record
         assert!(output.contains("Mortgage ID: 000123"));
@@ -482,7 +486,9 @@ mod tests {
         let calculator = MortgageCalculator::new();
 
         let input = "";
-        let output = calculator.process(input);
+        let start_year = 2025;
+        
+        let output = calculator.process(input, start_year);
 
         // Should result in empty output
         assert!(output.is_empty());
