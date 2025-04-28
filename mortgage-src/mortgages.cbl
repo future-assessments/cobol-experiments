@@ -52,12 +52,12 @@
            05 BASE                   COMP-2 VALUE 0.
 
        01  WS-FILE-STATUS            PIC XX.
-       01 WS-SWITCHES.
+       01  WS-SWITCHES.
            05  WS-EOF-SWITCH         PIC X VALUE 'N'.
                88  WS-EOF            VALUE 'Y'.
                88  WS-NOT-EOF        VALUE 'N'.
 
-       01 PRINT-LINE.
+       01  PRINT-LINE.
            05  LN-ID                 PIC X(6).
            05  FILLER                PIC X(16) VALUE ' Customer name: '.
            05  LN-CUST-NAME          PIC X(40).
@@ -112,12 +112,9 @@
            COMPUTE ANN-RATE ROUNDED = (RATE / 12) / 100
            COMPUTE BASE ROUNDED = (1+ANN-RATE) ** REMAINING-MONTHS
 
-
-           DISPLAY 'Base: ' BASE ', Rate: ' RATE ', Years: ' YEARS
-               ', Ann Rate: ' ANN-RATE
-
            COMPUTE PAYMENT-AMOUNT ROUNDED = MORTGAGEE-AMOUNT *
                      ( ( ANN-RATE * BASE  ) / (BASE - 1))
+
            ADD PAYMENT-AMOUNT TO ZERO GIVING OUT-PAYMENT-AMOUNT ROUNDED
 
            DISPLAY 'Mortgage ID: ' LN-ID ', Customer: '
