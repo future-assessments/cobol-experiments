@@ -40,10 +40,16 @@
            05 AMOUNT                 PIC 9(6).
            05 RATE                   COMP-2 VALUE 0.
            05 YEARS                  PIC 9(2).
-           05 BALANCE                PIC 9(6)V99.
+           05 BALANCE                COMP-2 VALUE 0.
+           05 OUT-BALANCE            PIC 9(6)V9(16).
+
+       01 REMAINING-MONTHS           PIC 9(3).
 
        01 PAYMENT-VALUES.
-           05 PAYMENT-AMOUNT         PIC 9(5)V99.
+           05 PAYMENT-AMOUNT         COMP-2 VALUE 0.
+           05 OUT-PAYMENT-AMOUNT     PIC ZZZZZ.ZZZZZZZZZZZZZZZZZZ.
+           05 ANN-RATE               COMP-2 VALUE 0.
+           05 BASE                   COMP-2 VALUE 0.
 
        01  WS-FILE-STATUS            PIC XX.
        01 WS-SWITCHES.
@@ -57,6 +63,8 @@
            05  LN-CUST-NAME          PIC X(40).
            05  FILLER                PIC X(10) VALUE ' Amount: '.
            05  LN-LOAN-AMT           PIC ZZZZZZZ.
+           05  FILLER                PIC X(10) VALUE ' Rate: '.
+           05  LN-RATE               PIC ZZZZ.ZZZZZZZZZZ.
 
        PROCEDURE DIVISION.
        0000-MAIN.
@@ -97,23 +105,37 @@
            MOVE MORTGAGEE-ID TO LN-ID
            MOVE MORTGAGEE-AMOUNT TO LN-LOAN-AMT
            MOVE MORTGAGEE-TERM TO YEARS
-           MOVE MORTGAGEE-AMOUNT TO AMOUNT
+           MOVE MORTGAGEE-AMOUNT TO BALANCE
            MOVE MORTGAGEE-RATE TO RATE
 
-           DISPLAY 'ID        : ' MORTGAGEE-ID
-           DISPLAY 'LAST NAME : ' MORTGAGEE-LAST-NAME
-           DISPLAY 'INIT      : ' MORTGAGEE-FIRST-INIT
-           DISPLAY 'FIRST NAME: ' MORTGAGEE-FIRST-NAME
-           DISPLAY 'AMOUNT    : ' MORTGAGEE-AMOUNT
-           DISPLAY 'RATE      : ' MORTGAGEE-RATE
-           DISPLAY 'TERM      : ' MORTGAGEE-TERM
-           DISPLAY 'TYPE      : ' MORTGAGEE-TYPE.
+           COMPUTE REMAINING-MONTHS = YEARS*12
+           COMPUTE ANN-RATE ROUNDED = (RATE / 12) / 100
+           COMPUTE BASE ROUNDED = (1+ANN-RATE) ** REMAINING-MONTHS
+
+
+           DISPLAY 'Base: ' BASE ', Rate: ' RATE ', Years: ' YEARS
+               ', Ann Rate: ' ANN-RATE
+
+           COMPUTE PAYMENT-AMOUNT ROUNDED = MORTGAGEE-AMOUNT *
+                     ( ( ANN-RATE * BASE  ) / (BASE - 1))
+           ADD PAYMENT-AMOUNT TO ZERO GIVING OUT-PAYMENT-AMOUNT ROUNDED
+
+           DISPLAY 'Mortgage ID: ' LN-ID ', Customer: '
+                   LN-CUST-NAME
+           DISPLAY 'Loan Amount: $' LN-LOAN-AMT ', Interest Rate: '
+                   RATE '% Term: ' YEARS ' years'
+
+           PERFORM 2200-CALCULATE-MONTHLY-PAYMENT 
+                         UNTIL REMAINING-MONTHS = 0.
+
 
        2200-CALCULATE-MONTHLY-PAYMENT.
-           COMPUTE PAYMENT-AMOUNT ROUNDED = (AMOUNT / (YEARS * 12) ) 
-           COMPUTE BALANCE = AMOUNT - PAYMENT-AMOUNT
+           COMPUTE BALANCE = BALANCE - PAYMENT-AMOUNT
+           ADD BALANCE TO ZERO GIVING OUT-BALANCE ROUNDED.
 
-           DISPLAY 'NOT YET IMPLEMENTED'.
+           COMPUTE REMAINING-MONTHS = REMAINING-MONTHS - 1
+           DISPLAY 'Payment mount $ '  OUT-PAYMENT-AMOUNT 
+                   ' Balance: ' OUT-BALANCE.
 
        3000-TERMINATE.
            CLOSE MORTGAGE-FILE.
