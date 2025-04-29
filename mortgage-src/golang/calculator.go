@@ -1,17 +1,33 @@
 package mortgage
 
 import (
-	"math"
+	"math/big"
 )
 
-func CalculateMonthlyPaymentFloat64(principal int, annualPercentualRate int, remainingMonths int) float64 {
-	monthlyRate := float64(annualPercentualRate) / 100.0 / 100.0 / 12.0
-	accumulationFactor := math.Pow(1 + monthlyRate, float64(remainingMonths))
+func CalculateMonthlyPaymentBigRat(principal int64, annualPercentualRate int64, remainingMonths int64) big.Rat {
+	monthlyRate := big.NewRat(annualPercentualRate, 100*100*12)
+	one := big.NewRat(1, 1)
+	accumulationFactor := exponentialRat(new(big.Rat).Add(one, monthlyRate), remainingMonths)
 
-	numerator := monthlyRate * accumulationFactor
-	denominator := accumulationFactor - 1
+	numerator := new(big.Rat).Mul(monthlyRate, accumulationFactor)
+	denominator := new(big.Rat).Sub(accumulationFactor, one)
 
-	monthlyPayment := float64(principal) * (numerator / denominator)
+	principalRat := new(big.Rat).SetInt64(principal)
+	monthlyPayment := new(big.Rat).Mul(principalRat, new(big.Rat).Quo(numerator, denominator))
 
-	return monthlyPayment
+	return *monthlyPayment
+}
+
+func exponentialRat(base *big.Rat, exponential int64) *big.Rat {
+	one := big.NewRat(1, 1)
+	if exponential == 0 {
+		return one
+	}
+
+	baseCopy := new(big.Rat).Set(base)
+	result := new(big.Rat).Set(one)
+	for count := int64(0); count < exponential; count++ {
+		result.Mul(result, baseCopy)
+	}
+	return result
 }
