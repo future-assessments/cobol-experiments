@@ -28,25 +28,25 @@
                10  MORTGAGEE-LAST-NAME   PIC X(14).
                10  MORTGAGEE-FIRST-INIT  PIC X.
                10  MORTGAGEE-FIRST-NAME  PIC X(14).
-           05  MORTGAGEE-AMOUNT          PIC 9(6).
-           05  MORTGAGEE-RATE            PIC 9(2)V99.
-           05  MORTGAGEE-TERM            PIC 99.
+           05  MORTGAGEE-AMOUNT          PIC 9(6) VALUE 0.
+           05  MORTGAGEE-RATE            PIC 9(2)V99 VALUE 0.
+           05  MORTGAGEE-TERM            PIC 99 VALUE 0.
            05  MORTGAGEE-TYPE            PIC X.
 
        WORKING-STORAGE SECTION.
        01 CUST-DETAILS.
            05 CUST-NAME              PIC X(30).
        01 LOAN-VALUES.
-           05 AMOUNT                 PIC 9(6).
+           05 AMOUNT                 PIC 9(6) VALUE 0.
            05 RATE                   COMP-2 VALUE 0.
-           05 YEARS                  PIC 9(2).
+           05 YEARS                  PIC 9(2) VALUE 0.
            05 BALANCE                COMP-2 VALUE 0.
-           05 OUT-BALANCE            PIC 9(6)V9(16).
 
        01 REMAINING-MONTHS           PIC 9(3).
 
        01 PAYMENT-VALUES.
            05 PAYMENT-AMOUNT         COMP-2 VALUE 0.
+           05 RECALC-PAYMENT-AMOUNT  COMP-2 VALUE 0.
            05 OUT-PAYMENT-AMOUNT     PIC ZZZZZ.ZZZZZZZZZZZZZZZZZZ.
            05 ANN-RATE               COMP-2 VALUE 0.
            05 BASE                   COMP-2 VALUE 0.
@@ -56,6 +56,10 @@
            05  WS-EOF-SWITCH         PIC X VALUE 'N'.
                88  WS-EOF            VALUE 'Y'.
                88  WS-NOT-EOF        VALUE 'N'.
+
+       01 COUNTERS.
+           05 CURRENT-YEAR           PIC 9(4) VALUE 0.
+           05 CURRENT-MONTH          PIC 9(2) VALUE 0.
 
        01  PRINT-LINE.
            05  LN-ID                 PIC X(6).
@@ -112,6 +116,10 @@
            COMPUTE ANN-RATE ROUNDED = (RATE / 12) / 100
            COMPUTE BASE ROUNDED = (1+ANN-RATE) ** REMAINING-MONTHS
 
+           DISPLAY 'Years: ' YEARS
+           DISPLAY 'Base: ' BASE
+           DISPLAY 'ANN-RATE: ' ANN-RATE
+
            COMPUTE PAYMENT-AMOUNT ROUNDED = MORTGAGEE-AMOUNT *
                      ( ( ANN-RATE * BASE  ) / (BASE - 1))
 
@@ -122,17 +130,29 @@
            DISPLAY 'Loan Amount: $' LN-LOAN-AMT ', Interest Rate: '
                    RATE '% Term: ' YEARS ' years'
 
+           MOVE 2025 TO CURRENT-YEAR
+           MOVE 1 TO CURRENT-MONTH
+
            PERFORM 2200-CALCULATE-MONTHLY-PAYMENT 
-                         UNTIL REMAINING-MONTHS = 0.
+                         UNTIL BALANCE  < 0.
 
 
        2200-CALCULATE-MONTHLY-PAYMENT.
            COMPUTE BALANCE = BALANCE - PAYMENT-AMOUNT
-           ADD BALANCE TO ZERO GIVING OUT-BALANCE ROUNDED.
 
            COMPUTE REMAINING-MONTHS = REMAINING-MONTHS - 1
-           DISPLAY 'Payment mount $ '  OUT-PAYMENT-AMOUNT 
-                   ' Balance: ' OUT-BALANCE.
+           DISPLAY 'Year: ' CURRENT-YEAR ', Month: ' CURRENT-MONTH 
+                   ',   Payment amount: $ '  OUT-PAYMENT-AMOUNT 
+                   ',    Balance: ' BALANCE.
+
+           
+
+           IF CURRENT-MONTH = 12
+               COMPUTE CURRENT-YEAR = CURRENT-YEAR + 1
+               MOVE 1 TO CURRENT-MONTH
+           ELSE
+               COMPUTE CURRENT-MONTH = CURRENT-MONTH + 1
+           END-IF.
 
        3000-TERMINATE.
            CLOSE MORTGAGE-FILE.
