@@ -153,13 +153,10 @@
            COMPUTE REMAINING-MONTHS = REMAINING-MONTHS - 1
            DISPLAY LN-ID ',' FUNCTION TRIM(LN-CUST-NAME) ','
                    MORTGAGEE-AMOUNT ','
-                   RATE ',' MORTGAGEE-TERM ',' CURRENT-YEAR ','
-                   CURRENT-MONTH ',' PAYMENT-NO ',' ANN-RATE ','
-                   INTEREST-PAYMENT ',' PAYMENT-AMOUNT ',' PRINCIPAL
-                   ',(actual),' BALANCE
-      *     DISPLAY 'Year: ' CURRENT-YEAR ', Month: ' CURRENT-MONTH 
-      *             ',   Payment amount: $ '  OUT-PAYMENT-AMOUNT 
-      *             ',    Balance: ' BALANCE.
+                   RATE ',' MORTGAGEE-TERM ',' MORTGAGEE-TYPE ','
+                   CURRENT-YEAR ',' CURRENT-MONTH ',' PAYMENT-NO ',' 
+                   ANN-RATE ',' INTEREST-PAYMENT ',' PAYMENT-AMOUNT ','
+                    PRINCIPAL ',' BALANCE
 
            
 
