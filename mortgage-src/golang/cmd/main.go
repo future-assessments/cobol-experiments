@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
+	"log"
 
-	"mortgage/pkg/calculator"
+	"mortgage/pkg/mortgage"
 
 	"github.com/gocarina/gocsv"
 )
@@ -13,16 +14,23 @@ const (
 )
 
 func main() {
-	mortgage := calculator.NewMortgageCalculator(300000, 625, 15 * 12)
+	mortgageFilePath := "./tests/utils/examples/one-example.txt"
+	mortgageFileParser := mortgage.NewParser()
 
-	monthlyPaymentPlan := mortgage.CalculateMonthlyPayment(precision)
-
-	csvContent, err := gocsv.MarshalString(&monthlyPaymentPlan)
-
+	mortgages, err := mortgageFileParser.Parse(mortgageFilePath)
 	if err != nil {
-		fmt.Println("Error:", err)
+		log.Fatalln("Error parsing file:", err)
 		return
 	}
 
-	fmt.Println(csvContent)
+	for _, mortgage := range mortgages {
+		monthlyPaymentPlan := mortgage.GetMonthlyPaymentPlan(precision)
+		csvContent, err := gocsv.MarshalString(&monthlyPaymentPlan)
+		if err != nil {
+			log.Fatalln("Error converting monthly payment plan to csv:", err)
+			return
+		}
+
+		fmt.Println(csvContent)
+	}
 }

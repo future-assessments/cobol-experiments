@@ -1,4 +1,4 @@
-package calculator
+package loan
 
 import (
 	"math/big"
