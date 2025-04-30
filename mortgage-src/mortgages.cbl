@@ -156,7 +156,7 @@
                    RATE ',' MORTGAGEE-TERM ',' CURRENT-YEAR ','
                    CURRENT-MONTH ',' PAYMENT-NO ',' ANN-RATE ','
                    INTEREST-PAYMENT ',' PAYMENT-AMOUNT ',' PRINCIPAL
-                   '(actual),' BALANCE
+                   ',(actual),' BALANCE
       *     DISPLAY 'Year: ' CURRENT-YEAR ', Month: ' CURRENT-MONTH 
       *             ',   Payment amount: $ '  OUT-PAYMENT-AMOUNT 
       *             ',    Balance: ' BALANCE.
