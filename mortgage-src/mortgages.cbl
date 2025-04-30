@@ -46,10 +46,13 @@
 
        01 PAYMENT-VALUES.
            05 PAYMENT-AMOUNT         COMP-2 VALUE 0.
+           05 INTEREST-PAYMENT       COMP-2 VALUE 0.
+           05 PRINCIPAL              COMP-2 VALUE 0.
            05 RECALC-PAYMENT-AMOUNT  COMP-2 VALUE 0.
            05 OUT-PAYMENT-AMOUNT     PIC ZZZZZ.ZZZZZZZZZZZZZZZZZZ.
            05 ANN-RATE               COMP-2 VALUE 0.
            05 BASE                   COMP-2 VALUE 0.
+           05 PAYMENT-NO             PIC 9(3)  VALUE 0.
 
        01  WS-FILE-STATUS            PIC XX.
        01  WS-SWITCHES.
@@ -73,6 +76,10 @@
        PROCEDURE DIVISION.
        0000-MAIN.
            PERFORM 1000-INITIALIZE
+           DISPLAY 'ID,Customer,Loan Amount,Interest Rate,Term,Type,'
+                   'Year,Month,Payment No.,Monthly Rate,Interest,'
+                   'Monthly Payment,Principal Payment,Actual Amount'
+                   'RemainingBalance'
            PERFORM 2000-PROCESS-FILE UNTIL WS-EOF
            PERFORM 3000-TERMINATE
            STOP RUN.
@@ -93,10 +100,13 @@
            END-READ.
 
        2000-PROCESS-FILE.
+
            PERFORM 2100-PROCESS-RECORD
            PERFORM 1100-READ-FILE.
 
        2100-PROCESS-RECORD.
+           MOVE '                                        '
+                    TO LN-CUST-NAME
            STRING MORTGAGEE-FIRST-NAME DELIMITED BY SPACE
                   ' '  DELIMITED BY SIZE
                   MORTGAGEE-FIRST-INIT DELIMITED BY SPACE
@@ -116,34 +126,40 @@
            COMPUTE ANN-RATE ROUNDED = (RATE / 12) / 100
            COMPUTE BASE ROUNDED = (1+ANN-RATE) ** REMAINING-MONTHS
 
-           DISPLAY 'Years: ' YEARS
-           DISPLAY 'Base: ' BASE
-           DISPLAY 'ANN-RATE: ' ANN-RATE
-
            COMPUTE PAYMENT-AMOUNT ROUNDED = MORTGAGEE-AMOUNT *
                      ( ( ANN-RATE * BASE  ) / (BASE - 1))
 
            ADD PAYMENT-AMOUNT TO ZERO GIVING OUT-PAYMENT-AMOUNT ROUNDED
-
-           DISPLAY 'Mortgage ID: ' LN-ID ', Customer: '
-                   LN-CUST-NAME
-           DISPLAY 'Loan Amount: $' LN-LOAN-AMT ', Interest Rate: '
-                   RATE '% Term: ' YEARS ' years'
+      *    DISPLAY 'Mortgage ID: ' LN-ID ', Customer: '
+      *         LN-CUST-NAME
+      *     DISPLAY 'Loan Amount: $' LN-LOAN-AMT ', Interest Rate: '
+      *         RATE '% Term: ' YEARS ' years'
 
            MOVE 2025 TO CURRENT-YEAR
            MOVE 1 TO CURRENT-MONTH
+           MOVE 0 TO PAYMENT-NO
 
            PERFORM 2200-CALCULATE-MONTHLY-PAYMENT 
                          UNTIL BALANCE  < 0.
 
 
        2200-CALCULATE-MONTHLY-PAYMENT.
+           ADD 1 TO PAYMENT-NO
+
            COMPUTE BALANCE = BALANCE - PAYMENT-AMOUNT
+           COMPUTE INTEREST-PAYMENT ROUNDED = ANN-RATE * BALANCE
+           COMPUTE PRINCIPAL ROUNDED = PAYMENT-AMOUNT - INTEREST-PAYMENT
 
            COMPUTE REMAINING-MONTHS = REMAINING-MONTHS - 1
-           DISPLAY 'Year: ' CURRENT-YEAR ', Month: ' CURRENT-MONTH 
-                   ',   Payment amount: $ '  OUT-PAYMENT-AMOUNT 
-                   ',    Balance: ' BALANCE.
+           DISPLAY LN-ID ',' FUNCTION TRIM(LN-CUST-NAME) ','
+                   MORTGAGEE-AMOUNT ','
+                   RATE ',' MORTGAGEE-TERM ',' CURRENT-YEAR ','
+                   CURRENT-MONTH ',' PAYMENT-NO ',' ANN-RATE ','
+                   INTEREST-PAYMENT ',' PAYMENT-AMOUNT ',' PRINCIPAL
+                   '(actual),' BALANCE
+      *     DISPLAY 'Year: ' CURRENT-YEAR ', Month: ' CURRENT-MONTH 
+      *             ',   Payment amount: $ '  OUT-PAYMENT-AMOUNT 
+      *             ',    Balance: ' BALANCE.
 
            
 
