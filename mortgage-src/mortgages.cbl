@@ -158,7 +158,7 @@
                    RATE ',' MORTGAGEE-TERM ',' MORTGAGEE-TYPE ','
                    CURRENT-YEAR ',' CURRENT-MONTH ',' PAYMENT-NO ',' 
                    ANN-RATE ',' INTEREST-PAYMENT ',' PAYMENT-AMOUNT ','
-                    PRINCIPAL ',' BALANCE
+                    PRINCIPAL ',' ACTUAL-AMOUNT ',' BALANCE
 
            
 
