@@ -48,6 +48,7 @@
            05 PAYMENT-AMOUNT         COMP-2 VALUE 0.
            05 INTEREST-PAYMENT       COMP-2 VALUE 0.
            05 PRINCIPAL              COMP-2 VALUE 0.
+           05 ACTUAL-AMOUNT          COMP-2 VALUE 0.
            05 RECALC-PAYMENT-AMOUNT  COMP-2 VALUE 0.
            05 OUT-PAYMENT-AMOUNT     PIC ZZZZZ.ZZZZZZZZZZZZZZZZZZ.
            05 ANN-RATE               COMP-2 VALUE 0.
@@ -78,7 +79,7 @@
            PERFORM 1000-INITIALIZE
            DISPLAY 'ID,Customer,Loan Amount,Interest Rate,Term,Type,'
                    'Year,Month,Payment No.,Monthly Rate,Interest,'
-                   'Monthly Payment,Principal Payment,Actual Amount'
+                   'Monthly Payment,Principal Payment,Actual Amount,'
                    'RemainingBalance'
            PERFORM 2000-PROCESS-FILE UNTIL WS-EOF
            PERFORM 3000-TERMINATE
@@ -149,6 +150,7 @@
            COMPUTE BALANCE = BALANCE - PAYMENT-AMOUNT
            COMPUTE INTEREST-PAYMENT ROUNDED = ANN-RATE * BALANCE
            COMPUTE PRINCIPAL ROUNDED = PAYMENT-AMOUNT - INTEREST-PAYMENT
+           COMPUTE ACTUAL-AMOUNT ROUNDED = PRINCIPAL + PAYMENT-AMOUNT
 
            COMPUTE REMAINING-MONTHS = REMAINING-MONTHS - 1
            DISPLAY LN-ID ',' FUNCTION TRIM(LN-CUST-NAME) ','
