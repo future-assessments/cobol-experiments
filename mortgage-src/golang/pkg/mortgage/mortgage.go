@@ -13,6 +13,7 @@ type MortgagePaymentPlan struct {
 	ID             string
 	MortgageeName  string
 	MonthlyPayment string
+	Installment    int
 	Balance        string
 }
 
@@ -31,11 +32,12 @@ func (mortgage *Mortgage) GetMonthlyPaymentPlan(precision uint) []*MortgagePayme
 func convertToMortgagePaymentPlan(mortgage *Mortgage, loanPaymentSummary []loan.LoanPaymentSummary) []*MortgagePaymentPlan {
 	mortgagePaymentPlan := make([]*MortgagePaymentPlan, len(loanPaymentSummary))
 
-	for i, payment := range loanPaymentSummary {
-		mortgagePaymentPlan[i] = &MortgagePaymentPlan{
+	for installment, payment := range loanPaymentSummary {
+		mortgagePaymentPlan[installment] = &MortgagePaymentPlan{
 			ID:             mortgage.Mortgagee.ID,
 			MortgageeName:  mortgage.Mortgagee.GetFullName(),
 			MonthlyPayment: payment.PaymentAmount,
+			Installment:    installment + 1,
 			Balance:        payment.Balance,
 		}
 	}

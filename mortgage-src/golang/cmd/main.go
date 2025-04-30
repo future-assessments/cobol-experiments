@@ -37,12 +37,12 @@ func main() {
 	}
 
 	csvContent, err := gocsv.MarshalString(&monthlyPaymentPlans)
-		if err != nil {
-			log.Fatalln("Error converting monthly payment plan to csv:", err)
-			return
-		}
+	if err != nil {
+		log.Fatalln("Error converting monthly payment plan to csv:", err)
+		return
+	}
 
-		fmt.Println(csvContent)
+	fmt.Println(csvContent)
 }
 
 func getFilePath() (string, error) {
