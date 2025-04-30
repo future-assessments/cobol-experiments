@@ -23,16 +23,16 @@ func NewMortgage(mortgagee *Mortgagee, loanCalculator loan.Calculator) *Mortgage
 	}
 }
 
-func (mortgage *Mortgage) GetMonthlyPaymentPlan(precision uint) []MortgagePaymentPlan {
+func (mortgage *Mortgage) GetMonthlyPaymentPlan(precision uint) []*MortgagePaymentPlan {
 	loanPaymentSummary := mortgage.Loan.CalculateMonthlyPayment(precision)
 	return convertToMortgagePaymentPlan(mortgage, loanPaymentSummary)
 }
 
-func convertToMortgagePaymentPlan(mortgage *Mortgage, loanPaymentSummary []loan.LoanPaymentSummary) []MortgagePaymentPlan {
-	mortgagePaymentPlan := make([]MortgagePaymentPlan, len(loanPaymentSummary))
+func convertToMortgagePaymentPlan(mortgage *Mortgage, loanPaymentSummary []loan.LoanPaymentSummary) []*MortgagePaymentPlan {
+	mortgagePaymentPlan := make([]*MortgagePaymentPlan, len(loanPaymentSummary))
 
 	for i, payment := range loanPaymentSummary {
-		mortgagePaymentPlan[i] = MortgagePaymentPlan{
+		mortgagePaymentPlan[i] = &MortgagePaymentPlan{
 			ID:             mortgage.Mortgagee.ID,
 			MortgageeName:  mortgage.Mortgagee.GetFullName(),
 			MonthlyPayment: payment.PaymentAmount,

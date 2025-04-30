@@ -24,15 +24,12 @@ func (parser *mortgageParse) Parse(filePath string) ([]*Mortgage, error) {
 
 	mortgages := []*Mortgage{}
 	for _, line := range lines {
-		fmt.Println(line)
-
 		mortgagee := parseLineToMortgagee(line)
 
 		loanCalculator, err := parseLineToLoan(line)
 		if err != nil {
 			return nil, fmt.Errorf("error parsing loan: %w", err)
 		}
-
 
 		mortgages = append(mortgages, NewMortgage(mortgagee, loanCalculator))
 	}

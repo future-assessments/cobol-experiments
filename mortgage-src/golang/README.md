@@ -5,7 +5,7 @@
 ## Run main
 
 ```bash
-go run main.go
+go run cmd/main.go ../mortgagees.txt
 ```
 
 ## Run tests
