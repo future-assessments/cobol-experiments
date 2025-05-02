@@ -1,6 +1,7 @@
 package loan_test
 
 import (
+	"math/big"
 	"testing"
 
 	"mortgage/pkg/loan"
@@ -14,9 +15,9 @@ func TestMortgageCalculator(t *testing.T) {
 	t.Run("Should calculate expected payment, interest and balance for one month", func(t *testing.T) {
 		// Arrange
 		principal := 2000
-		annualPercentualRate := int(0.01555 * 12 * 100 * 100)
+		annualPercentualRate := big.NewRat(0.01555*12*100*100, 100*100)
 		oneMonth := 1
-		loanCalculator := loan.NewCalculator(principal, annualPercentualRate, oneMonth)
+		loanCalculator := loan.NewCalculatorFromMonths(principal, annualPercentualRate, oneMonth)
 
 		// Act
 		result := loanCalculator.CalculateMonthlyPayment(20)

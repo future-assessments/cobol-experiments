@@ -9,28 +9,39 @@ type LoanPaymentSummary struct {
 
 type Calculator interface {
 	CalculateMonthlyPayment(precision uint) []LoanPaymentSummary
+	GetPrincipal() int
+	GetAnnualInterestRateInPercentage() string
+	GetLoanTermInYears() int
 }
 
 type Loan struct {
-	Principal            int
-	AnnualPercentualRate int
-	RemainingMonths      int
+	principal          int
+	annualInterestRate *big.Rat
+	remainingMonths    int
 }
 
-func NewCalculator(principal int, annualPercentualRate int, remainingMonths int) Calculator {
+func NewCalculatorFromMonths(principal int, annualPercentualRate *big.Rat, remainingMonths int) Calculator {
 	return &Loan{
-		Principal:            principal,
-		AnnualPercentualRate: annualPercentualRate,
-		RemainingMonths:      remainingMonths,
+		principal:          principal,
+		annualInterestRate: annualPercentualRate,
+		remainingMonths:    remainingMonths,
+	}
+}
+
+func NewCalculator(principal int, annualPercentualRate *big.Rat, termInYears int) Calculator {
+	return &Loan{
+		principal:          principal,
+		annualInterestRate: annualPercentualRate,
+		remainingMonths:        termInYears * 12,
 	}
 }
 
 func (loan *Loan) CalculateMonthlyPayment(precision uint) []LoanPaymentSummary {
 	mortgagePaymentSummary := []LoanPaymentSummary{}
-	balance := new(big.Rat).SetInt64(int64(loan.Principal))
+	balance := new(big.Rat).SetInt64(int64(loan.principal))
 
-	for remainingMonths := loan.RemainingMonths; remainingMonths > 0; remainingMonths-- {
-		payment, interest := CalculateMonthlyPaymentBigRat(balance, loan.AnnualPercentualRate, remainingMonths)
+	for remainingMonths := loan.remainingMonths; remainingMonths > 0; remainingMonths-- {
+		payment, interest := CalculateMonthlyPaymentBigRat(balance, loan.annualInterestRate, remainingMonths)
 		balance = balance.Sub(balance.Add(balance, interest), payment)
 		mortgagePaymentSummary = append(mortgagePaymentSummary, LoanPaymentSummary{
 			PaymentAmount: payment.FloatString(int(precision)),
@@ -39,4 +50,15 @@ func (loan *Loan) CalculateMonthlyPayment(precision uint) []LoanPaymentSummary {
 	}
 
 	return mortgagePaymentSummary
+}
+
+func (loan *Loan) GetPrincipal() int {
+	return loan.principal
+}
+func (loan *Loan) GetAnnualInterestRateInPercentage() string {
+	return new(big.Rat).Mul(loan.annualInterestRate, big.NewRat(100, 1)).FloatString(2)
+}
+
+func (loan *Loan) GetLoanTermInYears() int {
+	return loan.remainingMonths / 12
 }

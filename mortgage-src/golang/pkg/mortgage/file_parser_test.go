@@ -1,6 +1,7 @@
 package mortgage_test
 
 import (
+	"math/big"
 	"mortgage/pkg/loan"
 	"mortgage/pkg/mortgage"
 	utils_test "mortgage/tests/utils"
@@ -31,11 +32,7 @@ func TestMortgageParser(t *testing.T) {
 					MiddleInitial: "L",
 					FirstName:     "Aldo",
 				},
-				Loan: &loan.Loan{
-					Principal:            280000,
-					AnnualPercentualRate: 450,
-					RemainingMonths:      30 * 12,
-				},
+				Loan: loan.NewCalculator(280000, big.NewRat(450, 100*100), 30),
 			},
 		}, mortgages)
 	})

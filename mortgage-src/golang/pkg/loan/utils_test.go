@@ -16,7 +16,7 @@ func TestCalculator(t *testing.T) {
 	t.Run("Should calculate the monthly payment using Big Rational", func(t *testing.T) {
 		// Arrange
 		principal := new(big.Rat).SetInt64(10000)
-		annualPercentualRate := 350
+		annualPercentualRate := big.NewRat(350, 100*100) // 4.5% annual interest rate
 		remainingMonths := 60
 
 		// Act

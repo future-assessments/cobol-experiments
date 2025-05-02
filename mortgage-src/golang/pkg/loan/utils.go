@@ -4,8 +4,8 @@ import (
 	"math/big"
 )
 
-func CalculateMonthlyPaymentBigRat(principal *big.Rat, annualPercentualRate int, remainingMonths int) (*big.Rat, *big.Rat) {
-	monthlyRate := big.NewRat(int64(annualPercentualRate), 100*100*12)
+func CalculateMonthlyPaymentBigRat(principal *big.Rat, annualPercentualRate *big.Rat, remainingMonths int) (*big.Rat, *big.Rat) {
+	monthlyRate := new(big.Rat).Quo(annualPercentualRate, big.NewRat(12, 1))
 	one := big.NewRat(1, 1)
 	accumulationFactor := exponentialRat(new(big.Rat).Add(one, monthlyRate), int64(remainingMonths))
 
@@ -15,7 +15,8 @@ func CalculateMonthlyPaymentBigRat(principal *big.Rat, annualPercentualRate int,
 	principalCopy := new(big.Rat).Set(principal)
 	monthlyPayment := new(big.Rat).Mul(principalCopy, new(big.Rat).Quo(numerator, denominator))
 
-	return monthlyPayment, principalCopy.Mul(principalCopy, monthlyRate)
+	monthlyInterestAmount := principalCopy.Mul(principalCopy, monthlyRate)
+	return monthlyPayment, monthlyInterestAmount
 }
 
 func exponentialRat(base *big.Rat, exponential int64) *big.Rat {

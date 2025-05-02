@@ -2,6 +2,7 @@ package mortgage
 
 import (
 	"fmt"
+	"math/big"
 	"mortgage/internal/file"
 	"mortgage/pkg/loan"
 	"strconv"
@@ -53,7 +54,7 @@ func parseLineToLoan(line string) (loan.Calculator, error) {
 	}
 
 	annualPercentualRateString := line[41:45]
-	annualPercentualRate, err := strconv.ParseInt(annualPercentualRateString, 10, 32)
+	annualPercentualRateInteger, err := strconv.ParseInt(annualPercentualRateString, 10, 32)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing annual percentual rate: %w", err)
 	}
@@ -63,9 +64,8 @@ func parseLineToLoan(line string) (loan.Calculator, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error parsing loan term in years: %w", err)
 	}
-	remainingMonths := int(loanTermInYears) * 12
 
-	return loan.NewCalculator(int(principal), int(annualPercentualRate), remainingMonths), nil
+	return loan.NewCalculator(int(principal), big.NewRat(int64(annualPercentualRateInteger), 100*100), int(loanTermInYears)), nil
 }
 
 func NewParser() MortgageParser {
