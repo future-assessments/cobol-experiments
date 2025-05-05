@@ -6,6 +6,7 @@ import (
 
 	"github.com/ALTree/bigfloat"
 	"github.com/gocarina/gocsv"
+	"github.com/leekchan/accounting"
 )
 
 const (
@@ -26,14 +27,18 @@ type Customer struct {
 	LoanRateDecimal  *big.Float `json:"LoanRateDecimal" csv:"loan_rate_decimal"`
 	PaymentsSchedule []*Payment `json:"payment_schedule"`
 	MonthlyPayment   *big.Float `json:"monthly_payment"`
+	accountingFormat accounting.Accounting
 }
 
 // top -> down order of struct fields correlates to left->right order of CSV fields.
 type Payment struct {
-	PaymentNumber int        `json:"payment_number" csv:"payment_number"`
-	Principal     *big.Float `json:"principal" csv:"principal"`
-	Interest      *big.Float `json:"interest" csv:"interest"`
-	Balance       *big.Float `json:"balance" csv:"balance"`
+	PaymentNumber      int        `json:"payment_number" csv:"payment_number"`
+	Principal          *big.Float `json:"principal" csv:"principal"`
+	Interest           *big.Float `json:"interest" csv:"interest"`
+	Balance            *big.Float `json:"balance" csv:"balance"`
+	PrincipalFormatted string     `json:"principal_formatted" csv:"principal_formatted"`
+	BalanceFormatted   string     `json:"balance_formatted" csv:"balance_formatted"`
+	InterestFormatted  string     `json:"interest_formatted" csv:"interest_formatted"`
 }
 
 func NewPayment(precision uint) *Payment {
@@ -62,6 +67,7 @@ func NewCustomerRecord(precision uint) *Customer {
 	c.LoanTermMonths = c.LoanTerm * 12
 	c.MonthlyInterest.Quo(c.LoanRateDecimal, big.NewFloat(12))
 	c.calculateMonthlyPayment()
+	c.accountingFormat = accounting.Accounting{Symbol: "$", Precision: 2}
 	return c
 }
 
@@ -110,6 +116,11 @@ func (c *Customer) calculatePayment(balance *big.Float) {
 
 	p.Principal.Sub(c.MonthlyPayment, interestPayment)
 	p.Balance.Sub(balance, p.Principal)
+
+	p.BalanceFormatted = c.accountingFormat.FormatMoneyBigFloat(p.Balance)
+	p.InterestFormatted = c.accountingFormat.FormatMoneyBigFloat(p.Interest)
+	p.PrincipalFormatted = c.accountingFormat.FormatMoneyBigFloat(p.Principal)
+
 	c.PaymentsSchedule = append(c.PaymentsSchedule, p)
 
 }
